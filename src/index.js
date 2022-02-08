@@ -2,28 +2,20 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './css/styles.css';
+import WeatherService from './weather-Service.js';
+
+function clearFields() {
+  $('#location').val("");
+  $('.showErrors').text("");
+  $('.showHumidity').text("");
+  $('.showTemp').text("");
+}
 
 $(document).ready(function() {
   $('#weatherLocation').click(function() {
-    const city = $('#location').val();
-    $('#location').val("");
-
-    let promise = new Promise(function(resolve, reject) {
-      let request = new XMLHttpRequest();
-      const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial&appid=${process.env.API_KEY}`;
-    
-      request.onload = function() {
-        if (this.status === 200) {
-          resolve(request.response);
-        } else {
-          reject(request.response);
-        }
-      };
-  
-      request.open("GET", url, true);
-      request.send();
-    });
-
+    let city = $('#location').val();
+    clearFields();
+    let promise = WeatherService.getWeather(city);
     promise.then (function(response) {
       const body = JSON.parse(response);
       $('.showHumidity').text(`The humidity in ${city} is ${body.main.humidity}%`);
@@ -34,25 +26,11 @@ $(document).ready(function() {
       $('.showSunset').text(`The sun will set at ${new Date(body.sys.sunset * 1000).toLocaleTimeString("en-US")}`);
       $('.showErrors').text("");
     }, function(error) {
+      clearFields();
       $('.showErrors').text(`There was an error processing your request: ${error}`);
-      $('.showHumidity').text("");
-      $('.showTemp').text("");
-      $('.showWindSpeed').text("");
-      $('.showConditions').text("");
-      $('.showSunrise').text("");
-      $('.showSunset').text("");
     });
-
   });
 });
-
-
-
-
-
-
-
-
 
 $('#zipLocation').click(function () {
   const zip = $('#zip').val();
@@ -62,7 +40,7 @@ $('#zipLocation').click(function () {
   const url = `http://api.openweathermap.org/data/2.5/forecast?zip=${zip}&units=imperial&appid=${process.env.API_KEY}`;
 
 
-  // const url2 = `http://api.openweathermap.org/data/2.5/forecast/daily?zip=${zip}&cnt=3&appid=${process.env.API_KEY}`;
+  
 
 
   request.onreadystatechange = function () {
